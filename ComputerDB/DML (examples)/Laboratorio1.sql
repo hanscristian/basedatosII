@@ -187,6 +187,36 @@ set @utilidad_bruta = @ingresos - @egresos
 
 select @ingresos as Ingreso, @egresos as Egreso, @utilidad_bruta as Utilidad
 
+ 
+/*
+10.	Scenario: Reporte de utilidad bruta por departamento (Hans Batres)
+	a.	Given: el dueño de un negocio requiere información de las ventas
+	b.	When: requiera la información
+	c.	Then: debería mostrar el departamento, ingresos, egresos y utilidad bruta 
+	d.	And: debe estar ordenado por departamento
+	e.	And: debe ser posible filtrar por ninguno o varios departamentos
+*/
+----------------------------------------------------
+select t.nombre, t.ingresos, t.egresos, t.utilidad_bruta 
+	from ( select
+		d.nombredepartamento as nombre,
+		SUM(sd.cantidad * sd.precio) as Ingresos,
+		SUM(ed.cantidad * ed.precio) as Egresos,
+		sum((sd.cantidad * sd.precio) - (sd.cantidad * sd.costoTotal)) Utilidad_Bruta 
+		
+		from Productos p
+		
+		inner join EntradaDetalle ed on ed.idProducto = p.id
+		inner join SalidaDetalle  sd on sd.idProducto = p.id
+		inner join Salida          s on s.idSalida    = sd.idSalida
+		inner join Clientes        c on c.idCliente   = s.idCliente
+		inner join Municipio       m on m.idMunicipio = c.idMunicipio
+		inner join Departamento    d on m.idDepartamento = d.idDepartamento 
+		
+		group by d.nombreDepartamento		
+	)as t
+	where t.nombre like '%'  
+order by t.nombre asc
 
 
 /*
